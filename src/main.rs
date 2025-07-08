@@ -6,11 +6,7 @@ use simple_logger::SimpleLogger;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::sleep;
 
-// mod client;
-// mod proto;
 mod rrcp;
-// mod server;
-mod utils;
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
