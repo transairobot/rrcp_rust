@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
 use quinn::{Connection, RecvStream, SendStream};
-use tokio::{
-    stream,
-    sync::{Mutex, mpsc},
-};
+use tokio::sync::Mutex;
 
 pub struct StreamPool {
     streams: Arc<Mutex<Vec<(quinn::SendStream, quinn::RecvStream)>>>,

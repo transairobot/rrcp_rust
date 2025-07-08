@@ -3,8 +3,7 @@ use log::info;
 use quinn::{Endpoint, RecvStream, crypto::rustls::QuicClientConfig};
 use rmp_serde::{Deserializer, Serializer};
 use rustls::crypto::aws_lc_rs as provider;
-use serde::{Deserialize, Serialize, de};
-use std::sync::atomic::AtomicU64;
+use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::io::AsyncWriteExt;
 
@@ -61,7 +60,7 @@ impl RrcpClient {
             RrcpConfig::deserialize(&mut Deserializer::from_read_ref(&frame.body)).unwrap();
 
         info!("Received config: {:?}", config);
-        return Ok(config);
+        Ok(config)
     }
 
     pub async fn get_action(&mut self, sensor_data: &SensorData) -> anyhow::Result<Action> {
@@ -71,17 +70,17 @@ impl RrcpClient {
         sensor_data
             .serialize(&mut Serializer::new(&mut body).with_struct_map())
             .unwrap();
-        println!("");
-        println!("");
+        println!();
+        println!();
         for ch in &body {
             print!("{:x} ", ch);
         }
-        println!("");
-        println!("");
+        println!();
+        println!();
         header.body_length = body.len() as u64;
         let req_frame = RrcpFrame {
-            header: header,
-            body: body,
+            header,
+            body,
         };
 
         info!("Sending request: {:?}", &req_frame);
@@ -122,8 +121,8 @@ impl RrcpClient {
         info!("已连接到服务器: {}", connection.remote_address());
 
         Ok(Self {
-            server_addr: server_addr,
-            endpoint: endpoint,
+            server_addr,
+            endpoint,
             stream_pool: StreamPool::new(10, connection).await?,
         })
     }
