@@ -1,0 +1,29 @@
+[package]
+name = "rust_server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+quinn = "0.11.8" # QUIC 实现
+tokio = { version = "1.0", features = ["full"] } # 异步运行时
+rustls = "0.23.28" # TLS 支持
+rcgen = "0.11" # 证书生成（仅用于测试）
+anyhow = "1.0" # 错误处理
+rustls-pemfile = "2.2.0"
+log = "0.4.27"
+simple_logger = "5.0.0"
+tracing = { version = "0.1.10", default-features = false, features = ["std"] }
+tracing-futures = { version = "0.2.0", default-features = false, features = [
+    "std-future",
+] }
+tracing-subscriber = { version = "0.3.0", default-features = false, features = [
+    "env-filter",
+    "fmt",
+    "ansi",
+    "time",
+    "local-time",
+] }
+serde = { version = "1.0", features = ["derive"] }
+rmp-serde = "1.3.0"
+serde_bytes = "0.11"
+rmp = "0.8.14"
