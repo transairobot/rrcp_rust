@@ -58,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
         .init()
         .unwrap();
     // generate_self_signed_cert()?;
-    let server_addr: SocketAddr = "172.20.2.17:8080".parse()?;
+    let server_addr = "8.137.160.32:8000".parse()?;
 
     // // 在单独任务中运行服务
     // let server = tokio::spawn(server::run_server(server_addr));
@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 运行客户端
     // client::run_client(server_addr);
-    let mut client = rrcp::client::RrcpClient::new(server_addr).await?;
+    let mut client = rrcp::client::RrcpClient::new(server_addr, "transairobot.com").await?;
     let config = client.get_config().await?;
     info!("config={:?}", config);
     let sensor_data = SensorData {

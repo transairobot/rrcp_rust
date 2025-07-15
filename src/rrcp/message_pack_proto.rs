@@ -26,7 +26,25 @@ pub struct Image {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+struct WasmModule {
+    pub name: String,
+
+    #[serde(with = "serde_bytes")]
+    pub wasm: Vec<u8>,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RrcpConfig {
-    sc: u32,
-    cs: u32,
+    pub modules: Vec<WasmModule>,
+}
+
+impl RrcpConfig {
+    pub fn get_main_wasm(&self) -> Option<&[u8]> {
+        for module in &self.modules {
+            if module.name == "main" {
+                return Some(&module.wasm);
+            }
+        }
+        None
+    }
 }

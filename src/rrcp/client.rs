@@ -1,8 +1,10 @@
+use crate::rrcp::tls_utils;
+
 use super::stream_pool::StreamPool;
+use log::debug;
 use log::info;
 use quinn::{Endpoint, RecvStream, crypto::rustls::QuicClientConfig};
 use rmp_serde::{Deserializer, Serializer};
-use rustls::crypto::aws_lc_rs as provider;
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::io::AsyncWriteExt;
@@ -54,12 +56,12 @@ impl RrcpClient {
         let header = RRCPHeader::new_with_flag(Flag::GetConfig).to_bytes();
         let frame = self.do_request(&header).await?;
 
-        info!("Received frame: {:?}", frame.header);
-        info!("body={:?}", frame.body);
+        // info!("Received frame: {:?}", frame.header);
+        // info!("body={:?}", frame.body);
         let config =
             RrcpConfig::deserialize(&mut Deserializer::from_read_ref(&frame.body)).unwrap();
 
-        info!("Received config: {:?}", config);
+        // info!("Received config: {:?}", config);
         Ok(config)
     }
 
@@ -93,22 +95,13 @@ impl RrcpClient {
         Ok(action)
     }
 
-    pub async fn new(server_addr: SocketAddr) -> anyhow::Result<Self> {
+    pub async fn new(server_addr: SocketAddr, server_name: &str) -> anyhow::Result<Self> {
+        debug!("new robot client");
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .expect("install provider failed");
-        // // 1. 配置客户端（不验证证书，仅用于测试）
-        // let roots = utils::load_certificates_from_pem("cert.pem").unwrap();
-        // let mut client_crypto = rustls::ClientConfig::builder()
-        //     .with_root_certificates(roots)
-        //     .with_no_client_auth();
-        let mut client_crypto = rustls::ClientConfig::builder()
-            .dangerous()
-            .with_custom_certificate_verifier(Arc::new(
-                super::danger_tls::NoCertificateVerification::new(provider::default_provider()),
-            ))
-            .with_no_client_auth();
 
+        let mut client_crypto = tls_utils::new_tls_client_config()?;
         client_crypto.alpn_protocols = vec![b"quic".as_ref().into()];
         let client_config =
             quinn::ClientConfig::new(Arc::new(QuicClientConfig::try_from(client_crypto)?));
@@ -117,7 +110,7 @@ impl RrcpClient {
         endpoint.set_default_client_config(client_config);
 
         // // 2. 连接服务器
-        let connection = endpoint.connect(server_addr, "localhost")?.await?;
+        let connection = endpoint.connect(server_addr, server_name)?.await?;
         info!("已连接到服务器: {}", connection.remote_address());
 
         Ok(Self {
